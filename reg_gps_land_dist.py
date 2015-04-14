@@ -3,6 +3,7 @@ import math
 import socket
 import time
 from droneapi.lib import VehicleMode, Location
+from geopy.distance import vincenty
 
 api = local_connect()
 
@@ -33,11 +34,13 @@ def arm_and_takeoff():
     v.channel_override = rc_channels
 
     v.flush()
- 
+    #while (v.
+    #while not api.exit:
+    #   print "Dis bitch is hovering"
+    #  time.sleep(1)
     while v.location.alt < 14.5:
         print "Ascending. Current Altitude: ", v.location.alt
         time.sleep(1)
-
 
     v.flush()
         
@@ -62,7 +65,7 @@ def landongps():
     try:
 
         moving = False
-    
+        print "made it here 1"
         # Don't let the user try to fly while the board is still booting
         if v.mode.name == "INITIALISING":
             print "Vehicle still booting, try again later"
@@ -74,6 +77,8 @@ def landongps():
         # Use the python gps package to access the laptop GPS
         gpsd = gps.gps(mode=gps.WATCH_ENABLE)
 
+        print "made it here 2"
+
         while not api.exit:
             # This is necessary to read the GPS state from the laptop
             gpsd.next()
@@ -81,6 +86,11 @@ def landongps():
             if is_guided and v.mode.name != "GUIDED":
                 print "User has changed flight modes - aborting follow-me"
                 break
+
+            print "made it here 3"
+            print v.mode
+            print gpsd.fix.latitude
+            print gpsd.fix.longitude
 
             # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
             if (gpsd.valid & gps.LATLON_SET) != 0:
@@ -91,19 +101,33 @@ def landongps():
                 # A better implementation would only send new waypoints if the position had changed significantly
                 cmds.goto(dest)
                 is_guided = True
-                v.flush()
+                #v.flush()
+
+                altD = dest.alt
+                latD = dest.lat
+                lonD = dest.lon
+                coordD = (latD, lonD)
+                #v.flush()
 
                 # Send a new target every two seconds
                 # For a complete implementation of follow me you'd want adjust this delay 
                 vel = v.velocity
                 speed = math.sqrt(vel[0] * vel[0] + vel[1] * vel[1])
-                
+                altQ = v.location.alt
+                latQ = v.location.lat
+                lonQ = v.location.lon
+                coordQ = (latQ, lonQ)
+
+                targetDist = vincenty(coordQ, coordD).miles
                 v.flush()
+
+
  
       
                 print "Velocity: ", vel[0:3]
                 print "Speed: ", speed
-                print "Altitude: ", v.location.alt
+                print "Altitude: ", altQ
+                print "Distance to target ", targetDist
                 
                 if speed > 3:
                     moving = True
@@ -119,7 +143,8 @@ def landongps():
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
 
 arm_and_takeoff()
-
+print"before"
 v.mode    = VehicleMode("GUIDED")
-
+v.flush()
+print"after"
 landongps()
