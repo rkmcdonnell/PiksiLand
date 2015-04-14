@@ -64,8 +64,6 @@ def landongps():
 
     try:
 
-        moving = False
-        print "made it here 1"
         # Don't let the user try to fly while the board is still booting
         if v.mode.name == "INITIALISING":
             print "Vehicle still booting, try again later"
@@ -77,8 +75,6 @@ def landongps():
         # Use the python gps package to access the laptop GPS
         gpsd = gps.gps(mode=gps.WATCH_ENABLE)
 
-        print "made it here 2"
-
         while not api.exit:
             # This is necessary to read the GPS state from the laptop
             gpsd.next()
@@ -87,16 +83,11 @@ def landongps():
                 print "User has changed flight modes - aborting follow-me"
                 break
 
-            print "made it here 3"
-            print v.mode
-            print gpsd.fix.latitude
-            print gpsd.fix.longitude
-
             # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
             if (gpsd.valid & gps.LATLON_SET) != 0:
                 altitude = 15  # in meters
                 dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
-                print "Going to: %s" % dest
+                #print "Going to: %s" % dest
 
                 # A better implementation would only send new waypoints if the position had changed significantly
                 cmds.goto(dest)
@@ -107,7 +98,7 @@ def landongps():
                 latD = dest.lat
                 lonD = dest.lon
                 coordD = (latD, lonD)
-                #v.flush()
+                v.flush()
 
                 # Send a new target every two seconds
                 # For a complete implementation of follow me you'd want adjust this delay 
@@ -118,7 +109,8 @@ def landongps():
                 lonQ = v.location.lon
                 coordQ = (latQ, lonQ)
 
-                targetDist = vincenty(coordQ, coordD).miles
+                hDist = vincenty(coordQ, coordD).meters
+                vDist = abs(altQ - altD)
                 v.flush()
 
 
@@ -127,24 +119,19 @@ def landongps():
                 print "Velocity: ", vel[0:3]
                 print "Speed: ", speed
                 print "Altitude: ", altQ
-                print "Distance to target ", targetDist
-                
-                if speed > 3:
-                    moving = True
-
-
-                if speed < 0.3 and moving:
-                    print "speed check"
-                    v.mode    = VehicleMode("LAND")
+                print "Horizontal distance to target ", hDist
+                print "Vertical distance to target ", vDist
+            
+                if hDist < 0.1 and vDist < 0.1:
+                    v.mode = VehicleMode("LAND")
                                         
-                time.sleep(2)
+                time.sleep(1)
 
     except socket.error:
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
 
 arm_and_takeoff()
-print"before"
+
 v.mode    = VehicleMode("GUIDED")
-v.flush()
-print"after"
+
 landongps()
