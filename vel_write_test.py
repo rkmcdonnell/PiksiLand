@@ -2,6 +2,7 @@ import gps
 import math
 import socket
 import time
+import random
 from droneapi.lib import VehicleMode, Location
 from pymavlink import mavutil
 
@@ -37,7 +38,7 @@ def arm_and_takeoff():
 
     v.flush()
  
-    while v.location.alt < 14.5:
+    while v.location.alt < 14:
         print "Ascending. Current Altitude: ", v.location.alt
         time.sleep(1)
 
@@ -70,20 +71,9 @@ def vel_write_local():
         v.send_mavlink(msg)
         v.flush()
 
-        print "x, y, and z velocities:"
-        print vel_x
-        print vel_y
-        print vel_y
 
-        time.sleep(3)
-
-        iVel = v.velocity
-        print "Initial Velocity ", iVel[0:3]
-
-        time.sleep(3)
-
-        fVel = v.velocity
-        print "Final Velocity ", fVel[0:3]
+        vel = v.velocity
+        print "Final Velocity ", vel[0:3]
 
         v.flush()
 
@@ -125,8 +115,47 @@ def vel_write_global():
 
         time.sleep(3)
 
+def vel_write_random():
+
+
+    while 1:
+
+        vel_x = random.randint(-10,10);
+        vel_y = random.randint(-10,10);
+        vel_z = 0;
+
+        print "Velocity Commands"
+        print vel_x
+        print vel_y
+        print vel_z
+
+        msg = v.message_factory.set_position_target_local_ned_encode(
+                0,       # time_boot_ms (not used)
+                0, 0,    # target system, target component
+                1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+                0b0000000111000111,  # type_mask (ignore pos | ignore acc)
+                0, 0, 0, # x, y, z positions (not used)
+                vel_x, vel_y, vel_z, # x, y, z velocity in m/s
+                0, 0, 0, # x, y, z acceleration (not used)
+                0, 0)    # yaw, yaw_rate (not used)
+
+        v.flush()
+
+        # send command to vehicle
+        v.send_mavlink(msg)
+        v.flush()
+
+        time.sleep(0.1)
+
+
+        vel = v.velocity
+        print "Current Velocity ", vel[0:3]
+
+        v.flush()
+
+
 arm_and_takeoff()
 
 v.flush()
 
-vel_write_global()
+vel_write_random()
