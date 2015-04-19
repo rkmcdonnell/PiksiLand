@@ -38,7 +38,7 @@ def arm_and_takeoff():
     #while not api.exit:
     #   print "Dis bitch is hovering"
     #  time.sleep(1)
-    while v.location.alt < 14.5:
+    while v.location.alt < 14:
         print "Ascending. Current Altitude: ", v.location.alt
         time.sleep(1)
 
@@ -46,21 +46,8 @@ def arm_and_takeoff():
         
 
 def landongps():
-    """
-    followme - A DroneAPI example
 
-    This is a somewhat more 'meaty' example on how to use the DroneAPI.  It uses the
-    python gps package to read positions from the GPS attached to your laptop an
-    every two seconds it sends a new goto command to the vehicle.
-
-    To use this example:
-    * Run mavproxy.py with the correct options to connect to your vehicle
-    * module load api
-    * api start <path-to-follow_me.py>
-
-    When you want to stop follow-me, either change vehicle modes from your RC
-    transmitter or type "api stop".
-    """
+    v.mode    = VehicleMode("GUIDED")
 
     try:
 
@@ -131,7 +118,5 @@ def landongps():
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
 
 arm_and_takeoff()
-
-v.mode    = VehicleMode("GUIDED")
 
 landongps()
