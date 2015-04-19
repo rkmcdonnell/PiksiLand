@@ -21,6 +21,7 @@ from sbp.navigation import SBP_MSG_BASELINE_NED, MsgBaselineNED
 
 import time
 
+
 def baseline_callback(msg):
   # This function is called every time we receive a BASELINE_NED message
 
