@@ -7,8 +7,6 @@ import memcache
 import collections
 from droneapi.lib import VehicleMode, Location
 from pymavlink import mavutil
-from reg_gps_land_dist import landongps 
-
 
 
 
@@ -62,6 +60,10 @@ def arm_and_takeoff():
 
 def hover_above_target():
 
+    n_targ = 0
+    e_targ = 0
+    d_targ = 10
+
     while 1:
 
         north = shared.get("north")
@@ -93,12 +95,18 @@ def hover_above_target():
         e_avg = sum(e_deq) / len(e_deq)
         d_avg = sum(d_deq) / len(d_deq)
 
+        n_error = n_targ - n_avg
+        e_error = e_targ - e_avg
+        d_error = d_targ - d_avg
+
+        if n_error < 0.1 and e_error < 0.1 and d_error < 0.1:
+            return
+
         dist_to_vel = 0.15
 
-
-        vel_n = n_avg * dist_to_vel
-        vel_e = e_avg * dist_to_vel
-        vel_d = d_avg * dist_to_vel
+        vel_n = n_error * dist_to_vel
+        vel_e = e_error * dist_to_vel
+        vel_d = d_error * dist_to_vel
 
         #print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
@@ -121,15 +129,18 @@ def hover_above_target():
         time.sleep(0.1)
 
 
-
-
         vel = v.velocity
         #print "Current Velocity ", vel[0:3]
 
         v.flush()
 
+        
+
 
 def initial_descent():
+
+    n_targ = 0
+    e_targ = 0
 
     while 1:
         
@@ -165,14 +176,20 @@ def initial_descent():
         e_avg = sum(e_deq) / len(e_deq)
         d_avg = sum(d_deq) / len(d_deq)
 
-        print n_avg, e_avg, d_avg
+        if d_avg < 1:
+            v.mode = VehicleMode("LAND")
+
+
+        n_error = n_targ - n_avg
+        e_error = e_targ - e_avg
+        #d_error = d_targ - d_avg
 
         dist_to_vel = 0.15
+        descent_velocity = 0.5
 
-
-        vel_n = n_avg * dist_to_vel
-        vel_e = e_avg * dist_to_vel
-        vel_d = d_avg * dist_to_vel
+        vel_n = n_error * dist_to_vel
+        vel_e = e_error * dist_to_vel
+        vel_d = descent_velocity
 
         #print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
@@ -205,12 +222,86 @@ def initial_descent():
 
 
 
+def landongps():
+
+    v.mode    = VehicleMode("GUIDED")
+
+    try:
+
+        # Don't let the user try to fly while the board is still booting
+        if v.mode.name == "INITIALISING":
+            print "Vehicle still booting, try again later"
+            return
+
+        cmds = v.commands
+        is_guided = False  # Have we sent at least one destination point?
+
+        # Use the python gps package to access the laptop GPS
+        gpsd = gps.gps(mode=gps.WATCH_ENABLE)
+
+        while not api.exit:
+            # This is necessary to read the GPS state from the laptop
+            gpsd.next()
+
+            if is_guided and v.mode.name != "GUIDED":
+                print "User has changed flight modes - aborting follow-me"
+                break
+
+            # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
+            if (gpsd.valid & gps.LATLON_SET) != 0:
+                altitude = 15  # in meters
+                dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
+                #print "Going to: %s" % dest
+
+                # A better implementation would only send new waypoints if the position had changed significantly
+                cmds.goto(dest)
+                is_guided = True
+                #v.flush()
+
+                altD = dest.alt
+                latD = dest.lat
+                lonD = dest.lon
+                coordD = (latD, lonD)
+                v.flush()
+
+                # Send a new target every two seconds
+                # For a complete implementation of follow me you'd want adjust this delay 
+                vel = v.velocity
+                speed = math.sqrt(vel[0] * vel[0] + vel[1] * vel[1])
+                altQ = v.location.alt
+                latQ = v.location.lat
+                lonQ = v.location.lon
+                coordQ = (latQ, lonQ)
+
+                hDist = vincenty(coordQ, coordD).meters
+                vDist = abs(altQ - altD)
+                v.flush()
+
+
+ 
+      
+                print "Velocity: ", vel[0:3]
+                print "Speed: ", speed
+                print "Altitude: ", altQ
+                print "Horizontal distance to target ", hDist
+                print "Vertical distance to target ", vDist
+            
+                if hDist < 0.1 and vDist < 0.1:
+                    v.mode = VehicleMode("LAND")
+                                        
+                time.sleep(0.1)
+
+    except socket.error:
+        print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
+
 
 
 arm_and_takeoff()
 
 v.flush()
 
-#hover_above_target()
+hover_above_target()
+
+v.flush()
 
 initial_descent()

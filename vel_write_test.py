@@ -56,9 +56,9 @@ def arm_and_takeoff():
 def vel_write_local():
 
 
-    vel_x = 10;
-    vel_y = 5;
-    vel_z = 0;
+    vel_x = 0;
+    vel_y = 0;
+    vel_z = 1;
 
     while 1:
 
@@ -172,4 +172,4 @@ arm_and_takeoff()
 
 v.flush()
 
-vel_write_random()
+vel_write_local()
