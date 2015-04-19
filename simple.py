@@ -18,9 +18,11 @@ printing them out.
 from sbp.client.drivers.pyserial_driver import PySerialDriver
 from sbp.client.handler import Handler
 from sbp.navigation import SBP_MSG_BASELINE_NED, MsgBaselineNED
-
 import time
+import argparse
+import memcache
 
+shared = memcache.Client(['127.0.0.1:11211'], debug=0)
 
 def baseline_callback(msg):
   # This function is called every time we receive a BASELINE_NED message
@@ -32,22 +34,20 @@ def baseline_callback(msg):
 
   # b now contains the decoded baseline information and
   # has fields with the same names as in the SBP docs
-
+  north  = b.n*1e-3
+  east   = b.e*1e-3
+  down   = b.d*1e-3 
+  mode  = b.flags
+  shared.set("north", north)
+  shared.set("east", east)
+  shared.set("down", down)
+  shared.set("mode", mode)
   # Print out the N, E, D coordinates of the baseline
-  print "%.4f,%.4f,%.4f" % \
-    (b.n * 1e-3, b.e * 1e-3, b.d * 1e-3)
-  
-  if b.flags == 1:
-    print "RTK Mode: Fixed"
-  else:
-    print "RTK Mode: Float"
+  print "%.5f,%.5f,%.5f,%u" % (north, east, down, mode)
 
-  #print "%.u" % \
-  #  (b.flags)
 
 def main():
 
-  import argparse
   parser = argparse.ArgumentParser(description="Swift Navigation SBP Example.")
   parser.add_argument("-p", "--port",
                       default=['/dev/ttyUSB0'], nargs=1,
