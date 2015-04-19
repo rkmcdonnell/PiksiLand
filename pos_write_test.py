@@ -47,8 +47,8 @@ def arm_and_takeoff():
 
 def pos_write():
 
-    pos_x = 10;
-    pos_y = 10;
+    pos_x = 100;
+    pos_y = 100;
     pos_z = 0;
 
     while 1:
@@ -56,7 +56,7 @@ def pos_write():
         msg = v.message_factory.set_position_target_local_ned_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
-            1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+            8,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
             0b0000000111111000,  # type_mask (ignore pos | ignore acc)
             pos_x, pos_y, pos_z, # x, y, z positions (not used)
             0, 0, 0, # x, y, z velocity in m/s
