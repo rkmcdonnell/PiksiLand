@@ -35,6 +35,14 @@ def baseline_callback(msg):
   # Print out the N, E, D coordinates of the baseline
   print "%.4f,%.4f,%.4f" % \
     (b.n * 1e-3, b.e * 1e-3, b.d * 1e-3)
+  
+  if b.flags == 1:
+    print "RTK Mode: Fixed"
+  else:
+    print "RTK Mode: Float"
+
+  #print "%.u" % \
+  #  (b.flags)
 
 def main():
 
