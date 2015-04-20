@@ -152,6 +152,10 @@ def piksi_land():
         e_avg = sum(e_deq) / len(e_deq)
         d_avg = sum(d_deq) / len(d_deq)
 
+        if d_avg < 1:
+            print "Positioned 1 meter above LZ.  Switching to land mode."
+            v.mode = VehicleMode("LAND")
+
         n_error = n_targ - n_avg
         e_error = e_targ - e_avg
         d_error = d_targ - d_avg
