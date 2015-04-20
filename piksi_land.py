@@ -2,7 +2,6 @@ from gps import *
 import math
 import socket
 import time
-import random
 import memcache
 import collections
 from droneapi.lib import VehicleMode, Location
@@ -57,10 +56,16 @@ def arm_and_takeoff():
 # If action == 1 -> returns after reaching 10 meters above the target
 def regular_gps(action):
     try:
+
         # Don't let the user try to fly while the board is still booting
         if v.mode.name == "INITIALISING":
             print "Vehicle still booting, try again later"
             return
+
+        print "Setting flight mode to Guided"
+        v.mode = VehicleMode("GUIDED")
+        v.flush()
+        time.sleep(5)
 
         # Use the python gps package to access the laptop GPS
         gpsd = gps(mode=WATCH_ENABLE)
@@ -152,13 +157,13 @@ def piksi_land():
         e_avg = sum(e_deq) / len(e_deq)
         d_avg = sum(d_deq) / len(d_deq)
 
-        if d_avg < 1:
+        if abs(d_avg) < 1:
             print "Positioned 1 meter above LZ.  Switching to land mode."
             v.mode = VehicleMode("LAND")
 
-        n_error = n_targ - n_avg
-        e_error = e_targ - e_avg
-        d_error = d_targ - d_avg
+        n_error = n_avg - n_targ
+        e_error = e_avg - e_targ
+        d_error = d_avg - d_targ
 
         if abs(n_error) < 0.1 and abs(e_error) < 0.1 and abs(d_error)< 0.1:
             reached = True
@@ -172,7 +177,7 @@ def piksi_land():
         if reached:
             vel_d = descent_velocity
         else:
-            vel_d = -d_error * dist_to_vel
+            vel_d = d_error * dist_to_vel
 
         #print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
@@ -197,79 +202,6 @@ def piksi_land():
         #print "Current Velocity ", vel[0:3]
 
         v.flush()
-
-
-# def initial_descent():
-#     n_targ = 0
-#     e_targ = 0
-
-#     while 1:
-#         north = shared.get("north")
-#         east = shared.get("east")
-#         down = shared.get("down")
-#         mode = shared.get("mode")
-
-#         if mode == 0:
-#             print "Reverted to float mode.  Switching to regular GPS landing"
-#             regular_gps(0)
-
-#         #Add new observation and delete old one from NED deques
-#         n_deq.append(north)
-#         if len(n_deq) > 5:
-#             n_deq.popleft()
-
-#         e_deq.append(east)
-#         if len(e_deq) > 5:
-#             e_deq.popleft()
-
-#         d_deq.append(north)
-#         if len(d_deq) > 5:
-#             d_deq.popleft()
-
-#         n_avg = sum(n_deq) / len(n_deq)
-#         e_avg = sum(e_deq) / len(e_deq)
-#         d_avg = sum(d_deq) / len(d_deq)
-
-#         if d_avg < 1:
-#             print "Positioned 1 meter above LZ.  Switching to land mode."
-#             v.mode = VehicleMode("LAND")
-
-#         n_error = n_targ - n_avg
-#         e_error = e_targ - e_avg
-#         #d_error = d_targ - d_avg
-
-#         dist_to_vel = 0.15
-#         descent_velocity = 0.5
-
-#         vel_n = n_error * dist_to_vel
-#         vel_e = e_error * dist_to_vel
-#         vel_d = descent_velocity
-
-#         #print "Commanded Velocities: ",vel_n,vel_e,vel_d
-  
-#         msg = v.message_factory.set_position_target_local_ned_encode(
-#                 0,       # time_boot_ms (not used)
-#                 0, 0,    # target system, target component
-#                 1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
-#                 0b0000000111000111,  # type_mask (ignore pos | ignore acc)
-#                 0, 0, 0, # x, y, z positions (not used)
-#                 vel_n, vel_e, vel_d, # x, y, z velocity in m/s
-#                 0, 0, 0, # x, y, z acceleration (not used)
-#                 0, 0)    # yaw, yaw_rate (not used)
-
-#         v.flush()
-
-#         # Send command to vehicle
-#         v.send_mavlink(msg)
-#         v.flush()
-
-#         time.sleep(0.1)
-
-#         vel = v.velocity
-#         #print "Current Velocity ", vel[0:3]
-
-#         v.flush()
-
 
 # def landongps():
 #     try:
@@ -337,9 +269,9 @@ def piksi_land():
 #     except socket.error:
 #         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
 
-arm_and_takeoff()
+#arm_and_takeoff()
 
-v.flush()
+#v.flush()
 
 regular_gps(1)
 
