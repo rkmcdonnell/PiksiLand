@@ -151,19 +151,15 @@ def vel_write_random():
         v.send_mavlink(msg)
         v.flush()
 
-        time.sleep(0.1)
+        time.sleep(2)
 
-        north = shared.get("north")
-        east = shared.get("east")
-        down = shared.get("down")
-        mode = shared.get("mode")
 
-        print "NED Vector: ", north, east, down
-        print "RTK Mode: ", mode
 
 
         vel = v.velocity
         print "Current Velocity ", vel[0:3]
+
+        api.exit
 
         v.flush()
 
@@ -172,4 +168,4 @@ arm_and_takeoff()
 
 v.flush()
 
-vel_write_local()
+vel_write_random()

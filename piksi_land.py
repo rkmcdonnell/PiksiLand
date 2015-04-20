@@ -115,10 +115,15 @@ def regular_gps(action):
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
 
 
-def hover_above_target():
+def piksi_land():
     n_targ = 0
     e_targ = 0
     d_targ = 10
+
+    reached = False
+    dist_to_vel = 0.15
+    descent_velocity = 0.5
+    count = 0
 
     while 1:
         north = shared.get("north")
@@ -152,14 +157,18 @@ def hover_above_target():
         d_error = d_targ - d_avg
 
         if abs(n_error) < 0.1 and abs(e_error) < 0.1 and abs(d_error)< 0.1:
-            print "Positioned 10 meters above LZ.  Beginning initial descent."
-            return
-
-        dist_to_vel = 0.15
+            reached = True
+            count += 1
+            if count <= 1:
+                print "Positioned 10 meters above LZ.  Beginning initial descent."
 
         vel_n =  n_error * dist_to_vel
         vel_e =  e_error * dist_to_vel
-        vel_d = -d_error * dist_to_vel
+
+        if reached:
+            vel_d = descent_velocity
+        else:
+            vel_d = -d_error * dist_to_vel
 
         #print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
@@ -186,76 +195,76 @@ def hover_above_target():
         v.flush()
 
 
-def initial_descent():
-    n_targ = 0
-    e_targ = 0
+# def initial_descent():
+#     n_targ = 0
+#     e_targ = 0
 
-    while 1:
-        north = shared.get("north")
-        east = shared.get("east")
-        down = shared.get("down")
-        mode = shared.get("mode")
+#     while 1:
+#         north = shared.get("north")
+#         east = shared.get("east")
+#         down = shared.get("down")
+#         mode = shared.get("mode")
 
-        if mode == 0:
-            print "Reverted to float mode.  Switching to regular GPS landing"
-            regular_gps(0)
+#         if mode == 0:
+#             print "Reverted to float mode.  Switching to regular GPS landing"
+#             regular_gps(0)
 
-        #Add new observation and delete old one from NED deques
-        n_deq.append(north)
-        if len(n_deq) > 5:
-            n_deq.popleft()
+#         #Add new observation and delete old one from NED deques
+#         n_deq.append(north)
+#         if len(n_deq) > 5:
+#             n_deq.popleft()
 
-        e_deq.append(east)
-        if len(e_deq) > 5:
-            e_deq.popleft()
+#         e_deq.append(east)
+#         if len(e_deq) > 5:
+#             e_deq.popleft()
 
-        d_deq.append(north)
-        if len(d_deq) > 5:
-            d_deq.popleft()
+#         d_deq.append(north)
+#         if len(d_deq) > 5:
+#             d_deq.popleft()
 
-        n_avg = sum(n_deq) / len(n_deq)
-        e_avg = sum(e_deq) / len(e_deq)
-        d_avg = sum(d_deq) / len(d_deq)
+#         n_avg = sum(n_deq) / len(n_deq)
+#         e_avg = sum(e_deq) / len(e_deq)
+#         d_avg = sum(d_deq) / len(d_deq)
 
-        if d_avg < 1:
-            print "Positioned 1 meter above LZ.  Switching to land mode."
-            v.mode = VehicleMode("LAND")
+#         if d_avg < 1:
+#             print "Positioned 1 meter above LZ.  Switching to land mode."
+#             v.mode = VehicleMode("LAND")
 
-        n_error = n_targ - n_avg
-        e_error = e_targ - e_avg
-        #d_error = d_targ - d_avg
+#         n_error = n_targ - n_avg
+#         e_error = e_targ - e_avg
+#         #d_error = d_targ - d_avg
 
-        dist_to_vel = 0.15
-        descent_velocity = 0.5
+#         dist_to_vel = 0.15
+#         descent_velocity = 0.5
 
-        vel_n = n_error * dist_to_vel
-        vel_e = e_error * dist_to_vel
-        vel_d = descent_velocity
+#         vel_n = n_error * dist_to_vel
+#         vel_e = e_error * dist_to_vel
+#         vel_d = descent_velocity
 
-        #print "Commanded Velocities: ",vel_n,vel_e,vel_d
+#         #print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
-        msg = v.message_factory.set_position_target_local_ned_encode(
-                0,       # time_boot_ms (not used)
-                0, 0,    # target system, target component
-                1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
-                0b0000000111000111,  # type_mask (ignore pos | ignore acc)
-                0, 0, 0, # x, y, z positions (not used)
-                vel_n, vel_e, vel_d, # x, y, z velocity in m/s
-                0, 0, 0, # x, y, z acceleration (not used)
-                0, 0)    # yaw, yaw_rate (not used)
+#         msg = v.message_factory.set_position_target_local_ned_encode(
+#                 0,       # time_boot_ms (not used)
+#                 0, 0,    # target system, target component
+#                 1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+#                 0b0000000111000111,  # type_mask (ignore pos | ignore acc)
+#                 0, 0, 0, # x, y, z positions (not used)
+#                 vel_n, vel_e, vel_d, # x, y, z velocity in m/s
+#                 0, 0, 0, # x, y, z acceleration (not used)
+#                 0, 0)    # yaw, yaw_rate (not used)
 
-        v.flush()
+#         v.flush()
 
-        # Send command to vehicle
-        v.send_mavlink(msg)
-        v.flush()
+#         # Send command to vehicle
+#         v.send_mavlink(msg)
+#         v.flush()
 
-        time.sleep(0.1)
+#         time.sleep(0.1)
 
-        vel = v.velocity
-        #print "Current Velocity ", vel[0:3]
+#         vel = v.velocity
+#         #print "Current Velocity ", vel[0:3]
 
-        v.flush()
+#         v.flush()
 
 
 # def landongps():
@@ -330,10 +339,6 @@ v.flush()
 
 regular_gps(1)
 
-#v.flush()
+v.flush()
 
-# hover_above_target()
-
-# v.flush()
-
-# initial_descent()
+piksi_land()
