@@ -17,20 +17,27 @@ n_deq = collections.deque([])
 e_deq = collections.deque([])
 d_deq = collections.deque([])
 
-
-
 def piksi_goto():
+    print "Setting flight mode to Guided"
+    v.mode = VehicleMode("GUIDED")
+    v.flush()
+    time.sleep(3)
+
     n_targ = 0
     e_targ = 0
-    d_targ = 10
+    d_targ = 5
 
-    dist_to_vel = 0.15
+    dist_to_vel = 0.05
 
     while 1:
         north = shared.get("north")
         east = shared.get("east")
         down = shared.get("down")
         mode = shared.get("mode")
+
+        if v.mode.name != "GUIDED":
+            print "User has changed flight modes - aborting target approach"
+            break
 
         if mode == 0:
             print "Reverted to float mode.  Exiting goto script."
@@ -45,7 +52,7 @@ def piksi_goto():
         if len(e_deq) > 5:
             e_deq.popleft()
 
-        d_deq.append(north)
+        d_deq.append(down)
         if len(d_deq) > 5:
             d_deq.popleft()
 
@@ -64,12 +71,12 @@ def piksi_goto():
         vel_e =  e_error * dist_to_vel
         vel_d = d_error * dist_to_vel
 
-        #print "Commanded Velocities: ",vel_n,vel_e,vel_d
+        print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
         msg = v.message_factory.set_position_target_local_ned_encode(
                 0,       # time_boot_ms (not used)
                 0, 0,    # target system, target component
-                1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+                mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
                 0b0000000111000111,  # type_mask (ignore pos | ignore acc)
                 0, 0, 0, # x, y, z positions (not used)
                 vel_n, vel_e, vel_d, # x, y, z velocity in m/s
@@ -81,9 +88,11 @@ def piksi_goto():
         v.send_mavlink(msg)
         v.flush()
 
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         vel = v.velocity
         print "Current Velocity ", vel[0:3]
 
         v.flush()
+
+piksi_goto()

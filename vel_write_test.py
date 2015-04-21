@@ -120,16 +120,16 @@ def vel_write_global():
         time.sleep(3)
 
 def vel_write_random():
+    print "Setting mode to guided"
     v.mode = VehicleMode("GUIDED")
     v.flush()
+    time.sleep(4)
 
     while 1:
 
-        #vel_x = random.randint(-4,4);
-        #vel_y = random.randint(-4,4);
-        vel_x = 0
-        vel_y = 0
-        vel_z = 0.5;
+        vel_x = random.randint(-2,2);
+        vel_y = random.randint(-2,2);
+        vel_z = 0;
 
         print "Commanded Velocities: ",vel_x,vel_y,vel_z
         #print vel_y
@@ -139,8 +139,8 @@ def vel_write_random():
                 0,       # time_boot_ms (not used)
                 0, 0,    # target system, target component
                 mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
-                #0b0000000111000111,  # type_mask (ignore pos | ignore acc)
-                0x01C7,  # type_mask (ignore pos | ignore acc)
+                0b0000000111000111,  # type_mask (ignore pos | ignore acc)
+                #0x01C7,  # type_mask (ignore pos | ignore acc)
                 0, 0, 0, # x, y, z positions (not used)
                 vel_x, vel_y, vel_z, # x, y, z velocity in m/s
                 0, 0, 0, # x, y, z acceleration (not used)
@@ -152,9 +152,6 @@ def vel_write_random():
 
         time.sleep(2)
 
-
-
-
         vel = v.velocity
         print "Current Velocity ", vel[0:3]
 
@@ -163,8 +160,8 @@ def vel_write_random():
         v.flush()
 
 
-arm_and_takeoff()
+#arm_and_takeoff()
 
-v.flush()
+#v.flush()
 
 vel_write_random()
