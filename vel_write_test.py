@@ -49,9 +49,6 @@ def arm_and_takeoff():
         print "Ascending. Current Altitude: ", v.location.alt
         time.sleep(1)
 
-    v.mode = VehicleMode("GUIDED")
-    v.flush()
-
 
 def vel_write_local():
 
@@ -123,13 +120,16 @@ def vel_write_global():
         time.sleep(3)
 
 def vel_write_random():
-
+    v.mode = VehicleMode("GUIDED")
+    v.flush()
 
     while 1:
 
-        vel_x = random.randint(-10,10);
-        vel_y = random.randint(-10,10);
-        vel_z = 0;
+        #vel_x = random.randint(-4,4);
+        #vel_y = random.randint(-4,4);
+        vel_x = 0
+        vel_y = 0
+        vel_z = 0.5;
 
         print "Commanded Velocities: ",vel_x,vel_y,vel_z
         #print vel_y
@@ -138,14 +138,13 @@ def vel_write_random():
         msg = v.message_factory.set_position_target_local_ned_encode(
                 0,       # time_boot_ms (not used)
                 0, 0,    # target system, target component
-                1,#mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
-                0b0000000111000111,  # type_mask (ignore pos | ignore acc)
+                mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+                #0b0000000111000111,  # type_mask (ignore pos | ignore acc)
+                0x01C7,  # type_mask (ignore pos | ignore acc)
                 0, 0, 0, # x, y, z positions (not used)
                 vel_x, vel_y, vel_z, # x, y, z velocity in m/s
                 0, 0, 0, # x, y, z acceleration (not used)
                 0, 0)    # yaw, yaw_rate (not used)
-
-        v.flush()
 
         # send command to vehicle
         v.send_mavlink(msg)
