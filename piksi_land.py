@@ -130,9 +130,11 @@ def piksi_land():
     descent_velocity = 0.5
     deque_length = 5
     count = 0
-    rate = 10   
+    rate = 10
 
-    csvfile = open('file1.csv', 'wb')
+    timestr = time.strftime("%Y%m%d-%H%M")   
+
+    csvfile = open(timestr + '.csv', 'wb')
     writer = csv.writer(csvfile)
     writer.writerow(('gain','rate','deque length'))
     writer.writerow((dist_to_vel,rate,deque_length))
