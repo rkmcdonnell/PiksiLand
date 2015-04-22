@@ -4,6 +4,7 @@ import socket
 import time
 import memcache
 import collections
+import csv
 from droneapi.lib import VehicleMode, Location
 from pymavlink import mavutil
 from geopy.distance import vincenty
@@ -125,9 +126,20 @@ def piksi_land():
     d_targ = 10
 
     reached = False
-    dist_to_vel = 0.15
+    dist_to_vel = 0.10
     descent_velocity = 0.5
+    deque_length = 5
     count = 0
+    rate = 10   
+
+    csvfile = open('file1.csv', 'wb')
+    writer = csv.writer(csvfile)
+    writer.writerow(('gain','rate','deque length'))
+    writer.writerow((dist_to_vel,rate,deque_length))
+    writer.writerow(('','',''))
+    writer.writerow(('n_pos','e_pos','d_pos',
+                     'n_msg','e_msg','d_msg',
+                     'n_vel','e_vel','d_vel','time'))
 
     while 1:
         north = shared.get("north")
@@ -141,15 +153,15 @@ def piksi_land():
 
         #Add new observation and delete old one from NED deques
         n_deq.append(north)
-        if len(n_deq) > 5:
+        if len(n_deq) > deque_length:
             n_deq.popleft()
 
         e_deq.append(east)
-        if len(e_deq) > 5:
+        if len(e_deq) > deque_length:
             e_deq.popleft()
 
         d_deq.append(down)
-        if len(d_deq) > 5:
+        if len(d_deq) > deque_length:
             d_deq.popleft()
 
         n_avg = sum(n_deq) / len(n_deq)
@@ -183,7 +195,7 @@ def piksi_land():
         else:
             vel_d = d_error * dist_to_vel
 
-        #print "Commanded Velocities: ",vel_n,vel_e,vel_d
+        print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
         msg = v.message_factory.set_position_target_local_ned_encode(
                 0,       # time_boot_ms (not used)
@@ -200,16 +212,25 @@ def piksi_land():
         v.send_mavlink(msg)
         v.flush()
 
-        time.sleep(0.1)
+        time.sleep(1/float(rate))
 
         vel = v.velocity
-        #print "Current Velocity ", vel[0:3]
+        print "Current Velocity ", vel[0:3]
 
         v.flush()
 
-#arm_and_takeoff()
+        elapsed = count * (1/float(rate)) 
 
-#v.flush()
+        writer.writerow((n_avg, e_avg, d_avg,
+                         vel_n, vel_e, vel_d,
+                         vel[0],vel[1],vel[2],elapsed))
+
+        count += 1
+
+
+arm_and_takeoff()
+
+v.flush()
 
 regular_gps(1)
 
