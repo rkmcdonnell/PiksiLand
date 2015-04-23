@@ -57,10 +57,11 @@ def regular_gps(action):
             print "Vehicle still booting, try again later"
             return
 
-        print "Setting flight mode to Guided"
-        v.mode = VehicleMode("GUIDED")
-        v.flush()
-        time.sleep(3)
+        if v.mode.name != "GUIDED":
+            print "Setting flight mode to Guided"
+            v.mode = VehicleMode("GUIDED")
+            v.flush()
+            time.sleep(3)
 
         # Use the python gps package to access the laptop GPS
         gpsd = gps(mode=WATCH_ENABLE)
@@ -94,16 +95,17 @@ def regular_gps(action):
                     v.commands.clear()
                     v.commands.goto(dest)
                     v.flush()
-                    print "Updating destination to: %s" % dest
+                    print "Updating destination to %s" % dest
 
                 dest_new =(dest.lat, dest.lon)
                 hDist = vincenty(current, dest_new).meters
                 vDist = abs(v.location.alt - dest.alt)
             
                 if hDist < 1 and vDist < 1 and action == 0:
-                    print "Destination reached. Beginning standard GPS Landing"
+                    print "Destination reached. Landing using regular GPS"
                     v.mode = VehicleMode("LAND")
                     v.flush()
+                    return 
 
                 if hDist < 1 and vDist < 1 and action == 1:
                     print "At target area.  Switching to RTK hover mode"
@@ -116,21 +118,23 @@ def regular_gps(action):
 
 
 def piksi_land():
-    print "Setting flight mode to Guided"
-    v.mode = VehicleMode("GUIDED")
-    v.flush()
-    time.sleep(3)
+    if v.mode.name != "GUIDED":
+        print "Setting flight mode to Guided"
+        v.mode = VehicleMode("GUIDED")
+        v.flush()
+        time.sleep(3)
 
     n_targ = 0
     e_targ = 0
     d_targ = 10
 
     reached = False
-    dist_to_vel = 0.10
+    dist_to_vel = 0.15
     descent_velocity = 0.5
     deque_length = 5
     count = 0
     rate = 10
+    max_vel = 5
 
     timestr = time.strftime("%Y%m%d-%H%M")   
 
@@ -152,6 +156,7 @@ def piksi_land():
         if mode == 0:
             print "Reverted to float mode.  Switching to regular GPS landing"
             regular_gps(0)
+            return
 
         #Add new observation and delete old one from NED deques
         n_deq.append(north)
@@ -178,24 +183,26 @@ def piksi_land():
             v.flush()
             return
 
-
         n_error = n_avg - n_targ
         e_error = e_avg - e_targ
         d_error = d_avg - d_targ
 
-        if abs(n_error) < 0.1 and abs(e_error) < 0.1 and abs(d_error)< 0.1:
+        if abs(n_error) < 0.2 and abs(e_error) < 0.2:
             reached = True
             count += 1
             if count <= 1:
                 print "Positioned 10 meters above LZ.  Beginning initial descent."
 
         vel_n =  n_error * dist_to_vel
+        vel_n = min(vel_n, max_vel)
         vel_e =  e_error * dist_to_vel
+        vel_e = min(vel_e, max_vel)
 
         if reached:
             vel_d = descent_velocity
         else:
             vel_d = d_error * dist_to_vel
+            vel_d = min(vel_d, max_vel)
 
         print "Commanded Velocities: ",vel_n,vel_e,vel_d
   
@@ -230,9 +237,9 @@ def piksi_land():
         count += 1
 
 
-arm_and_takeoff()
+#arm_and_takeoff()
 
-v.flush()
+#v.flush()
 
 regular_gps(1)
 
