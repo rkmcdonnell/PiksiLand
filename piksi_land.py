@@ -129,19 +129,24 @@ def piksi_land():
     d_targ = 10
 
     reached = False
-    dist_to_vel = 0.15
-    descent_velocity = 0.5
-    deque_length = 5
     count = 0
-    rate = 10
-    max_vel = 5
+
+    #Parameters to be tuned for best results:
+    p_gain = 0.10               # proportional gain (distance to velocity)
+    descent_vel = 0.5           # meters per second
+    max_vel = 5                 # meters per second
+    deque_length = 5            # number of entries in smoothing deque
+    landmode_height = 1         # meters
+    rate = 10                   # Hz
 
     timestr = time.strftime("%Y%m%d-%H%M")   
 
     csvfile = open(timestr + '.csv', 'wb')
     writer = csv.writer(csvfile)
-    writer.writerow(('gain','rate','deque length'))
-    writer.writerow((dist_to_vel,rate,deque_length))
+    writer.writerow(('p_gain','descent_vel','max_vel',
+                     'deque_length', 'landmode_height','rate'))
+    writer.writerow((p_gain, descent_vel, max_vel,
+                     deque_length, landmode_height, rate))
     writer.writerow(('','',''))
     writer.writerow(('n_pos','e_pos','d_pos',
                      'n_msg','e_msg','d_msg',
@@ -177,8 +182,8 @@ def piksi_land():
 
         print "NED avg values: ", n_avg, e_avg, d_avg
 
-        if abs(d_avg) < 1:
-            print "Positioned 1 meter above LZ.  Switching to land mode."
+        if abs(d_avg) < landmode_height:
+            print "Positioned directly above LZ.  Switching to land mode."
             v.mode = VehicleMode("LAND")
             v.flush()
             return
@@ -188,20 +193,19 @@ def piksi_land():
         d_error = d_avg - d_targ
 
         if abs(n_error) < 0.2 and abs(e_error) < 0.2:
+        	if not reached:
+        		print "Positioned 10 meters above LZ.  Beginning initial descent."
             reached = True
-            count += 1
-            if count <= 1:
-                print "Positioned 10 meters above LZ.  Beginning initial descent."
 
-        vel_n =  n_error * dist_to_vel
+        vel_n =  n_error * p_gain
         vel_n = min(vel_n, max_vel)
-        vel_e =  e_error * dist_to_vel
+        vel_e =  e_error * p_gain
         vel_e = min(vel_e, max_vel)
 
         if reached:
-            vel_d = descent_velocity
+            vel_d = descent_vel
         else:
-            vel_d = d_error * dist_to_vel
+            vel_d = d_error * p_gain
             vel_d = min(vel_d, max_vel)
 
         print "Commanded Velocities: ",vel_n,vel_e,vel_d
