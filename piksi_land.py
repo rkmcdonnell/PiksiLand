@@ -31,10 +31,10 @@ def arm_and_takeoff():
         time.sleep(1)
 
     print "Taking off!"
-	
+    
     v.commands.takeoff(10) # Take off to 10m height
 
-	# Pretend we have a RC transmitter connected
+    # Pretend we have a RC transmitter connected
     rc_channels = v.channel_override
     rc_channels[3] = 1500 # throttle
     v.channel_override = rc_channels
@@ -57,11 +57,10 @@ def regular_gps(action):
             print "Vehicle still booting, try again later"
             return
 
-        if v.mode.name != "GUIDED":
-            print "Setting flight mode to Guided"
-            v.mode = VehicleMode("GUIDED")
-            v.flush()
-            time.sleep(3)
+        print "Setting flight mode to Guided"
+        v.mode = VehicleMode("GUIDED")
+        v.flush()
+        time.sleep(3)
 
         # Use the python gps package to access the laptop GPS
         gpsd = gps(mode=WATCH_ENABLE)
@@ -101,13 +100,13 @@ def regular_gps(action):
                 hDist = vincenty(current, dest_new).meters
                 vDist = abs(v.location.alt - dest.alt)
             
-                if hDist < 1 and vDist < 1 and action == 0:
+                if hDist < 0.5 and action == 0:
                     print "Destination reached. Landing using regular GPS"
                     v.mode = VehicleMode("LAND")
                     v.flush()
                     return 
 
-                if hDist < 1 and vDist < 1 and action == 1:
+                if hDist < 0.5 and action == 1:
                     print "At target area.  Switching to RTK hover mode"
                     return
                     
@@ -122,7 +121,7 @@ def piksi_land():
         print "Setting flight mode to Guided"
         v.mode = VehicleMode("GUIDED")
         v.flush()
-        time.sleep(3)
+        time.sleep(4)
 
     n_targ = 0
     e_targ = 0
@@ -132,11 +131,11 @@ def piksi_land():
     count = 0
 
     #Parameters to be tuned for best results:
-    p_gain = 0.10               # proportional gain (distance to velocity)
+    p_gain = 0.15               # proportional gain (distance to velocity)
     descent_vel = 0.5           # meters per second
     max_vel = 5                 # meters per second
     deque_length = 5            # number of entries in smoothing deque
-    landmode_height = 1         # meters
+    landmode_height = 0.6         # meters
     rate = 10                   # Hz
 
     timestr = time.strftime("%Y%m%d-%H%M")   
@@ -149,6 +148,7 @@ def piksi_land():
                      deque_length, landmode_height, rate))
     writer.writerow(('','',''))
     writer.writerow(('n_pos','e_pos','d_pos',
+                     'n_avg','e_avg','d_avg',
                      'n_msg','e_msg','d_msg',
                      'n_vel','e_vel','d_vel','time'))
 
@@ -192,9 +192,9 @@ def piksi_land():
         e_error = e_avg - e_targ
         d_error = d_avg - d_targ
 
-        if abs(n_error) < 0.2 and abs(e_error) < 0.2:
-        	if not reached:
-        		print "Positioned 10 meters above LZ.  Beginning initial descent."
+        if abs(n_error) < 0.5 and abs(e_error) < 0.5:
+            if not reached:
+                print "Positioned 10 meters above LZ.  Beginning initial descent."
             reached = True
 
         if n_error >= 0:
@@ -239,7 +239,8 @@ def piksi_land():
 
         elapsed = count * (1/float(rate)) 
 
-        writer.writerow((n_avg, e_avg, d_avg,
+        writer.writerow((north,east,down,
+                         n_avg, e_avg, d_avg,
                          vel_n, vel_e, vel_d,
                          vel[0],vel[1],vel[2],elapsed))
 
