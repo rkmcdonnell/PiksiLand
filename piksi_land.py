@@ -197,10 +197,15 @@ def piksi_land():
         		print "Positioned 10 meters above LZ.  Beginning initial descent."
             reached = True
 
-        vel_n =  n_error * p_gain
-        vel_n = min(vel_n, max_vel)
-        vel_e =  e_error * p_gain
-        vel_e = min(vel_e, max_vel)
+        if n_error >= 0:
+            vel_n =  min(n_error * p_gain, max_vel)
+        else:
+            vel_n =  max(n_error * p_gain, -max_vel)            
+
+        if e_error >= 0:
+            vel_e =  min(e_error * p_gain, max_vel)
+        else:
+            vel_e =  max(e_error * p_gain, -max_vel) 
 
         if reached:
             vel_d = descent_vel
