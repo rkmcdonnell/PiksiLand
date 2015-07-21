@@ -5,7 +5,8 @@ autonomous landing of a quadcopter running the ArduPilot software.
 
 this is a nother line
 -----
- 
+ * quadcopter
+ * 2 piksi antennas
 
 
 	
