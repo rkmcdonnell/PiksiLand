@@ -1,7 +1,9 @@
 # PiksiLand
 
-The aim of this project is to use Piksi RTK GPS receivers from Swift Navigation to achieve accurate 
-autonomous landing of a quadcopter running the ArduPilot software.  
+For background on our project, you can find a copy of our final report here:  
+https://www.dropbox.com/s/33yc60lk8twa2bz/Luzarraga_McDonnell_File.pdf?dl=0  
+
+This document explains how to use our code
 
 this is a nother line
 -----
