@@ -3,7 +3,7 @@
 For background on our project, you can find a copy of our final report here:  
 https://www.dropbox.com/s/33yc60lk8twa2bz/Luzarraga_McDonnell_File.pdf?dl=0  
 
-This document outlines the steps necessary to get our code up and running on your computer. If you have any questions, you can email us at luzarragan@gmail.com or rkmcd93@gmail.com, although answers to many of your questions can probably be found more readily on Google. 
+This document outlines the steps necessary to get our code up and running on your computer. If you have any questions, you can email us at luzarragan@gmail.com or rkmcd93@gmail.com, although answers to many of your questions can probably be found more readily using Google. 
 
 
 1. Installing Linux 
@@ -50,7 +50,7 @@ sudo apt-get install memcached
 
 7. Installing the Latest Firmware    
 -- 
-The final_piksi_land.py script controls the quadcopter by sending velocity commands over MAVProxy based on the NED vector it receives from the Piksi receivers. In order to send velocity commands to the quadcopter, you must be using the most recent version of the ArduPilot firmware, which is not a stable release. Normally, you could update the firware using APM Planner, which is available for both Mac OS X and Linux. In order to install custom firmware, however, you must install it using Mission Planner, which is only available on Windows. Therefore, in order to run our code, you will need access to a Windows computer. First, you should install Mission Planner, which is available on the ArduPilot website: http://ardupilot.com/downloads/?did=82. Next, download the latest firmware version from firmware.diydrones.com. We downloaded the latest version from http://firmware.diydrones.com/Copter/latest/PX4-quad/, but new versions are added periodically, so you might need to search around the site to find the right one. After you download the latest firmware, choose the "custom firmware" option in Mission Planner and select the file you just downloaded. Once you have uploaded the latest firmware to the quadcopter, you should be able to send velocity commands to it directly.  
+The final_piksi_land.py script controls the quadcopter by sending velocity commands over MAVProxy based on the NED vector it receives from the Piksi receivers. In order to send velocity commands to the quadcopter, you must be using the most recent version of the ArduPilot firmware, which is not a stable release. Normally, you could update the firmware using APM Planner, which is available for both Mac OS X and Linux. In order to install custom firmware, however, you must install it using Mission Planner, which is only available on Windows. Therefore, in order to run our code, you will need access to a Windows computer. First, you should install Mission Planner, which is available on the ArduPilot website: http://ardupilot.com/downloads/?did=82. Next, download the latest firmware version from firmware.diydrones.com. We downloaded the latest version from http://firmware.diydrones.com/Copter/latest/PX4-quad/, but new versions are added periodically, so you might need to search around the site to find the right one. After you download the latest firmware, choose the "custom firmware" option in Mission Planner and select the file you just downloaded. Once you have uploaded the latest firmware to the quadcopter, you should be able to send velocity commands to it directly.  
 
 8. Installing GPSD  
 --
@@ -74,9 +74,9 @@ Once simple.py is running and writing NED values using memcache, take off manual
 api start final_piksi_land.py
 ~~~
 
-Note: This will only work if you are in the directory where final_piksi_land.py is located.  
+(Note: This will only work if you are in the directory where final_piksi_land.py is located.)  
 
-After you launch the script, the quadcopter should hopefully perform an autonomous landing. One person should at all times be watching the quadcopter with the controller in their hands so that they can assume manual control in case the quadcopter begins to act strangely.  
+After you launch the script, the quadcopter should hopefully perform an autonomous landing. One person should be watching the quadcopter at all times with the controller in their hands so that they can assume manual control in case the quadcopter begins to act erratically.  
 
 It is important to remember that the Piksi receivers can be quite temperamental and often lose RTK lock, in which case the script should revert to using the standard GPS receiver as its target, although this does not always work.
 
