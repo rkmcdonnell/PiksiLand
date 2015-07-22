@@ -76,7 +76,7 @@ api start final_piksi_land.py
 
 (Note: This will only work if you are in the directory where final_piksi_land.py is located.)  
 
-After you launch the script, the quadcopter should hopefully perform an autonomous landing. One person should be watching the quadcopter at all times with the controller in their hands so that they can assume manual control in case the quadcopter begins to act erratically.  
+After you launch the script, the quadcopter should hopefully perform an autonomous landing. One person should be watching the quadcopter at all times with the controller in their hands, so that they can assume manual control in case the quadcopter begins to act erratically.  
 
 It is important to remember that the Piksi receivers can be quite temperamental and often lose RTK lock, in which case the script should revert to using the standard GPS receiver as its target, although this does not always work.
 
