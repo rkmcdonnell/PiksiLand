@@ -35,7 +35,7 @@ http://docs.swiftnav.com/wiki/HOW-TO:_Running_the_Piksi_Console_from_source
 
 6. Installing Memcache   
 --
-Memcache is a package used to communicate between the Piksi console and MAVProxy. The simple.py script uses memcache to save the NED vector from the Piksi receivers to a memory location and the final_pikis_land.py script then retrieves the NED vector from this memory location, with very little delay. To install the memcache Python package, enter into the command line:
+Memcache is a package used to communicate between the Piksi console and MAVProxy. The simple.py script uses memcache to save the NED vector from the Piksi receivers to a memory location and the final_piksi_land.py script then retrieves the NED vector from this memory location. To install the memcache Python package, enter into the command line:
 
 ~~~
 sudo pip install python-memcached
@@ -48,13 +48,13 @@ sudo apt-get install memcached
 ~~~
 
 
-7. Installing the Proper Firmware    
+7. Installing the Latest Firmware    
 -- 
-The final_piksi_land.py script controls the quadcopter by sending velocity commands over MAVProxy based on the NED vector it receives from the Piksi receivers. In order to send velocity commands to the quadcopter, you must be using the most recent version of the ArduPilot firmware, which is not a stable release. Normally, you could update the firware using APM Planner, which is available for both Mac OS X and Linux. In order to install custom firmware, however, you must install it using Mission Planner, which is only available on Windows. Therefore, in order to run our code, you will need access to a Windows computer. First, you should install Mission Planner, which is available on the ArduPilot website: http://ardupilot.com/downloads/?did=82. Next, download the latest firmware version from firmware.diydrones.com. We downloaded the latest version from http://firmware.diydrones.com/Copter/latest/PX4-quad/, but new versions are added periodically, so you might need to search around the site to find the right one. After you download the latest firmware, choose the "custom firmware" option in Mission Planner and select the file you just downloaded. Once you have uploaded the latest firware to the quadcopter, you should be able to send velocity commands to it directly.  
+The final_piksi_land.py script controls the quadcopter by sending velocity commands over MAVProxy based on the NED vector it receives from the Piksi receivers. In order to send velocity commands to the quadcopter, you must be using the most recent version of the ArduPilot firmware, which is not a stable release. Normally, you could update the firware using APM Planner, which is available for both Mac OS X and Linux. In order to install custom firmware, however, you must install it using Mission Planner, which is only available on Windows. Therefore, in order to run our code, you will need access to a Windows computer. First, you should install Mission Planner, which is available on the ArduPilot website: http://ardupilot.com/downloads/?did=82. Next, download the latest firmware version from firmware.diydrones.com. We downloaded the latest version from http://firmware.diydrones.com/Copter/latest/PX4-quad/, but new versions are added periodically, so you might need to search around the site to find the right one. After you download the latest firmware, choose the "custom firmware" option in Mission Planner and select the file you just downloaded. Once you have uploaded the latest firmware to the quadcopter, you should be able to send velocity commands to it directly.  
 
 8. Installing GPSD  
 --
-If you want to use a standard GPS receiver as a backup target for the quadcopter to land at in case the Piksi receivers lose RTK lock, you need to have a GPS receiver plugged into the USB port of the laptop and transmitting GPS coordinates in the NMEA format. The GPS receiver should do this automatically once it is plugged in, as long as you have installed gpsd. This should be installed by default on Linux, but to make sure, type into the command line: 
+If you want to use a standard GPS receiver as a backup target in case the Piksi receivers lose RTK lock, you need to have a GPS receiver plugged into the USB port of the laptop and transmitting GPS coordinates in the NMEA format. The GPS receiver should do this automatically once it is plugged in, as long as you have installed gpsd. This should be installed on Linux by default, but to make sure, type into the command line: 
 
 ~~~
 sudo apt-get install gpsd
