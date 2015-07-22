@@ -29,9 +29,9 @@ http://docs.swiftnav.com/wiki/HOW-TO:_Running_the_Piksi_Console_from_source
 5. Installing Memcache   
 --
 Memcache is a package used to communicate between the Piksi console and MAVProxy. The simple.py script uses memcache to save the NED vector from the Piksi receivers to a memory location and the final_pikis_land.py script then retrieves the NED vector from this memory location, with very little delay. To install the memcache Python package, you will use pip install, so type into the command line
-    sudo pip install python-memcached
+        sudo pip install python-memcached
 You will also need to use the apt-get command, so type into the command line
-    sudo apt-get install memcached
+        sudo apt-get install memcached
 
 
 6. Installing the Proper Firmware  
