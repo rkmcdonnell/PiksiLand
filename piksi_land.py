@@ -66,7 +66,7 @@ def regular_gps(action):
         gpsd = gps(mode=WATCH_ENABLE)
 
         # Cruising altitude
-        cruise = 10 
+        cruise = 5 
 
          # Initial destination (set to Princeton field by default)
         dest = Location(40.346479,-74.644052,cruise,is_relative=True)
@@ -89,18 +89,18 @@ def regular_gps(action):
                 current = (v.location.lat,v.location.lon)
             
                 # Only update direction if it has changed significantly since it was last checked
-                if (vincenty(dest_old,fix).meters > 1):
-                    dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, cruise, is_relative=True)
-                    v.commands.clear()
-                    v.commands.goto(dest)
-                    v.flush()
-                    print "Updating destination to %s" % dest
+                #if (vincenty(dest_old,fix).meters > 1):
+                dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, cruise, is_relative=True)
+                v.commands.clear()
+                v.commands.goto(dest)
+                v.flush()
+                print "Updating destination to %s" % dest
 
                 dest_new =(dest.lat, dest.lon)
                 hDist = vincenty(current, dest_new).meters
                 vDist = abs(v.location.alt - dest.alt)
             
-                if hDist < 0.5 and action == 0:
+                if hDist < 0.2 and action == 0:
                     print "Destination reached. Landing using regular GPS"
                     v.mode = VehicleMode("LAND")
                     v.flush()
@@ -110,7 +110,7 @@ def regular_gps(action):
                     print "At target area.  Switching to RTK hover mode"
                     return
                     
-                time.sleep(0.1)
+                time.sleep(0.2)
 
     except socket.error:
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
@@ -125,7 +125,7 @@ def piksi_land():
 
     n_targ = 0
     e_targ = 0
-    d_targ = 10
+    d_targ = 5
 
     reached = False
     count = 0
@@ -135,7 +135,7 @@ def piksi_land():
     descent_vel = 0.5           # meters per second
     max_vel = 5                 # meters per second
     deque_length = 5            # number of entries in smoothing deque
-    landmode_height = 0.6         # meters
+    landmode_height = 0.8         # meters
     rate = 10                   # Hz
 
     timestr = time.strftime("%Y%m%d-%H%M")   
@@ -250,9 +250,6 @@ def piksi_land():
 #arm_and_takeoff()
 
 #v.flush()
+regular_gps(0)
 
-regular_gps(1)
-
-v.flush()
-
-piksi_land()
+#piksi_land()
