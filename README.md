@@ -12,13 +12,13 @@ We recommend running Linux on your computer, as it is necessary if you want to u
 Because you are now running Linux, you will need to run the Piksi console from source. The instructions for installing the Piksi console can be found on the Swift Nav website:  
 http://docs.swiftnav.com/wiki/HOW-TO:_Running_the_Piksi_Console_from_source  
 
-3. Install MAVProxy
+3. Install MAVProxy  
 MAVproxy 
 
-4. Communicating Between the Piksi Console and MAVProxy: Memcache 
+4. Communicating Between the Piksi Console and MAVProxy: Memcache   
 Have to install memcache
 
-5. Installing the Proper Firware
+5. Installing the Proper Firware  
 Need to use Mission Planner and install unstable firware
 
 
