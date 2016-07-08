@@ -1,7 +1,7 @@
 # PiksiLand
 
 For background on our project, you can find a copy of our final report here:  
-https://www.dropbox.com/s/33yc60lk8twa2bz/Luzarraga_McDonnell_File.pdf?dl=0  
+https://www.dropbox.com/s/tn0empu1ecyk7xm/autonomous-landing-quadcopter.pdf?dl=0 
 
 This document outlines the steps necessary to get our code up and running on your computer. If you have any questions, you can email us at luzarragan@gmail.com or rkmcd93@gmail.com, although answers to many of your questions can probably be found more readily using Google. 
 
